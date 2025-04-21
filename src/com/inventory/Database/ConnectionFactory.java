@@ -24,7 +24,7 @@ import java.util.Properties;
 public class ConnectionFactory {
 
     static final String driver = "com.mysql.cj.jdbc.Driver";
-    static final String url = "jdbc:mysql://localhost:3306/OrderDeliveryDB";
+    static final String url = "jdbc:mysql://localhost:3306/YOUR_DATABASE_NAME";
     static String username;
     static String password;
 
