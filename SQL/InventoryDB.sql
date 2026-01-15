@@ -1,246 +1,352 @@
-CREATE DATABASE  IF NOT EXISTS `inventory` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `inventory`;
--- MySQL dump 10.13  Distrib 8.0.25, for Win64 (x86_64)
---
--- Host: 127.0.0.1    Database: inventory
--- ------------------------------------------------------
--- Server version	8.0.25
+DROP DATABASE IF EXISTS  OrderDeliveryDB; ;
+CREATE DATABASE IF NOT EXISTS OrderDeliveryDB;
+USE OrderDeliveryDB;
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!50503 SET NAMES utf8 */;
-/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
-/*!40103 SET TIME_ZONE='+00:00' */;
-/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
---
--- Table structure for table `currentstock`
---
+CREATE TABLE Customer (
+    CustomerID INT PRIMARY KEY,
+    Name VARCHAR(100),
+    Address TEXT,
+    Phone VARCHAR(15),
+    Email VARCHAR(100)
+);
 
-DROP TABLE IF EXISTS `currentstock`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `currentstock` (
-  `productcode` varchar(45) NOT NULL,
-  `quantity` int NOT NULL,
-  PRIMARY KEY (`productcode`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+CREATE TABLE DeliveryPerson (
+    PersonID INT PRIMARY KEY,
+    Type VARCHAR(20) CHECK (Type IN ('Employee', 'Freelancer'))
+);
 
---
--- Dumping data for table `currentstock`
---
+CREATE TABLE Warehouse (
+    WarehouseID INT PRIMARY KEY,
+    Location VARCHAR(100),
+    Capacity INT
+);
+-- CREATE TABLE Vendor (
+--     VendorID INT PRIMARY KEY,
+--     Name VARCHAR(100),
+--     Contact VARCHAR(50),
+--     Location VARCHAR(100),
+--     Rating FLOAT
+-- );
 
-LOCK TABLES `currentstock` WRITE;
-/*!40000 ALTER TABLE `currentstock` DISABLE KEYS */;
-INSERT INTO `currentstock` VALUES ('prod1',146),('prod2',100),('prod3',202),('prod4',172),('prod5',500),('prod6',500),('prod7',10),('prod8',20);
-/*!40000 ALTER TABLE `currentstock` ENABLE KEYS */;
-UNLOCK TABLES;
+-- CREATE TABLE Product (
+--     ProductID INT PRIMARY KEY,
+--     Name VARCHAR(100),
+--     Category VARCHAR(100),
+--     Price DECIMAL(10,2),
+--     Stock INT,
+--     WarehouseID INT,
+--     VendorID INT,
+--     OrderID INT,
+--     FOREIGN KEY (WarehouseID) REFERENCES Warehouse(WarehouseID),
+--     FOREIGN KEY (VendorID) REFERENCES Vendor(VendorID),
+--     FOREIGN KEY (OrderID) REFERENCES ORDERS (OrderID)
+-- );
+-- CREATE TABLE Perishable (
+--     ProductID INT PRIMARY KEY,
+--     ExpirationDate DATE,
+--     StorageTemperature VARCHAR(50),
+--     PackagingType VARCHAR(50),
+--     SpecialHandling TEXT,
+--     FragilityLevel VARCHAR(50),
+--     FOREIGN KEY (ProductID) REFERENCES Product(ProductID)
+-- );
+-- CREATE TABLE NonPerishable (
+--     ProductID INT PRIMARY KEY,
+--     WarrantyPeriod VARCHAR(50),
+--     ReturnPolicy TEXT,
+--     FOREIGN KEY (ProductID) REFERENCES Product(ProductID)
+-- );
 
---
--- Table structure for table `customers`
---
+CREATE TABLE ORDERS (
+    OrderID INT PRIMARY KEY,
+    OrderDate DATE,
+    Status VARCHAR(50),
+    TotalAmount DECIMAL(10,2),
+    CustomerID INT,
+    DeliveryPersonID INT,
+    WarehouseID INT,
+    FOREIGN KEY (CustomerID) REFERENCES Customer(CustomerID),
+    FOREIGN KEY (DeliveryPersonID) REFERENCES DeliveryPerson(PersonID),
+    FOREIGN KEY (WarehouseID) REFERENCES Warehouse(WarehouseID)
+);
 
-DROP TABLE IF EXISTS `customers`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `customers` (
-  `cid` int NOT NULL AUTO_INCREMENT,
-  `customercode` varchar(45) NOT NULL,
-  `fullname` varchar(45) NOT NULL,
-  `location` varchar(45) NOT NULL,
-  `phone` varchar(45) NOT NULL,
-  PRIMARY KEY (`cid`)
-) ENGINE=InnoDB AUTO_INCREMENT=307 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Dumping data for table `customers`
---
+CREATE TABLE Payment (
+    PaymentID INT PRIMARY KEY,
+    OrderID INT,
+    PaymentMode VARCHAR(50),
+    TransactionDate DATE,
+    FOREIGN KEY (OrderID) REFERENCES ORDERS (OrderID)
+);
+CREATE TABLE ShipmentTracking (
+    TrackingID INT PRIMARY KEY,
+    OrderID INT,
+    Status VARCHAR(50),
+    CurrentLocation VARCHAR(100),
+    FOREIGN KEY (OrderID) REFERENCES ORDERS (OrderID)
+);
+CREATE TABLE Product (
+    ProductID INT PRIMARY KEY,
+    Name VARCHAR(100),
+    Category VARCHAR(100),
+    Price DECIMAL(10,2),
+    Stock INT
+);
 
-LOCK TABLES `customers` WRITE;
-/*!40000 ALTER TABLE `customers` DISABLE KEYS */;
-INSERT INTO `customers` VALUES (301,'vip1','John Seed','New York','9818562354'),(302,'vip2','Jacob Seed','Texas','9650245489'),(303,'std1','Ajay Kumar','Mumbai','9236215622'),(304,'std2','Astha Walia','Chandigarh','8854612478'),(306,'vip3','Madhu Chitkara','Chandigarh','9826546182');
-/*!40000 ALTER TABLE `customers` ENABLE KEYS */;
-UNLOCK TABLES;
+INSERT INTO Product (ProductID, Name, Category, Price, Stock)
+VALUES
+(1, 'Amul Milk', 'Dairy', 52.00, 100),
+(2, 'Tata Salt', 'Grocery', 20.00, 200),
+(3, 'Fortune Oil', 'Grocery', 130.00, 150),
+(4, 'Nestle Yogurt', 'Dairy', 40.00, 80);
 
---
--- Table structure for table `products`
---
+INSERT INTO Product (ProductID, Name, Category, Price, Stock)
+VALUES
+(5, 'Parle-G Biscuits', 'Snacks', 10.00, 300),
+(6, 'Maggie Noodles', 'Snacks', 14.00, 250),
+(7, 'Aashirvaad Atta', 'Grocery', 280.00, 90),
+(8, 'Mother Dairy Paneer', 'Dairy', 85.00, 70),
+(9, 'Dabur Honey', 'Grocery', 199.00, 60),
+(10, 'Britannia Cheese Slices', 'Dairy', 120.00, 50),
+(11, 'Haldiram Bhujia', 'Snacks', 50.00, 100),
+(12, 'Tropicana Juice', 'Beverage', 110.00, 40),
+(13, 'Real Mixed Fruit Juice', 'Beverage', 105.00, 45),
+(14, 'Surf Excel Detergent', 'Household', 190.00, 75),
+(15, 'Colgate Toothpaste', 'Personal Care', 55.00, 120);
 
-DROP TABLE IF EXISTS `products`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `products` (
-  `pid` int NOT NULL AUTO_INCREMENT,
-  `productcode` varchar(45) NOT NULL,
-  `productname` varchar(45) NOT NULL,
-  `costprice` double NOT NULL,
-  `sellprice` double NOT NULL,
-  `brand` varchar(45) NOT NULL,
-  PRIMARY KEY (`pid`),
-  UNIQUE KEY `productcode_UNIQUE` (`productcode`)
-) ENGINE=InnoDB AUTO_INCREMENT=130 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+CREATE TABLE Vendor (
+    VendorID INT PRIMARY KEY,
+    Name VARCHAR(100),
+    Contact VARCHAR(50),
+    Location VARCHAR(100),
+    Rating FLOAT
+);
 
---
--- Dumping data for table `products`
---
+INSERT INTO Vendor (VendorID, Name, Contact, Location, Rating)
+VALUES
+(1, 'Reliance', '+91-9876543210', 'Mumbai', 4.5),
+(2, 'Tata', '+91-9876501234', 'Pune', 4.3),
+(3, 'BigBasket', '+91-9123456780', 'Bangalore', 4.7),
+(4, 'Metro', '+91-9988776655', 'Delhi', 4.4);
 
-LOCK TABLES `products` WRITE;
-/*!40000 ALTER TABLE `products` DISABLE KEYS */;
-INSERT INTO `products` VALUES (111,'prod1','Laptop',85000,90000,'Dell'),(112,'prod2','Laptop',70000,72000,'HP'),(113,'prod3','Mobile',60000,64000,'Apple'),(114,'prod4','Mobile',50000,51000,'Samsung'),(121,'prod5','Charger',2000,2100,'Apple'),(122,'prod6','Mouse',1700,1900,'Dell'),(128,'prod7','Power Adapter',3000,3500,'Dell'),(129,'prod8','Smart Watch',15000,17000,'Apple');
-/*!40000 ALTER TABLE `products` ENABLE KEYS */;
-UNLOCK TABLES;
+INSERT INTO Vendor (VendorID, Name, Contact, Location, Rating)
+VALUES
+(5, 'D-Mart', '+91-9090909090', 'Hyderabad', 4.6),
+(6, 'Spencer\'s Retail', '+91-9012345678', 'Kolkata', 4.2),
+(7, 'Nature\'s Basket', '+91-9087654321', 'Mumbai', 4.5),
+(8, 'Amazon Pantry', '+91-9112233445', 'Chennai', 4.8),
+(9, 'Flipkart Supermart', '+91-9001122334', 'Bangalore', 4.6),
+(10, 'More Retail', '+91-9334455667', 'Ahmedabad', 4.3),
+(11, 'Ratnadeep', '+91-9556677889', 'Hyderabad', 4.4),
+(12, 'Heritage Fresh', '+91-9778899001', 'Vijayawada', 4.2),
+(13, 'JioMart', '+91-9345612390', 'Thane', 4.5),
+(14, 'Star Bazaar', '+91-9567123489', 'Navi Mumbai', 4.1),
+(15, 'Local Kirana', '+91-9998887776', 'Jaipur', 4.0);
 
---
--- Table structure for table `purchaseinfo`
---
 
-DROP TABLE IF EXISTS `purchaseinfo`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `purchaseinfo` (
-  `purchaseID` int NOT NULL AUTO_INCREMENT,
-  `suppliercode` varchar(45) NOT NULL,
-  `productcode` varchar(45) NOT NULL,
-  `date` varchar(45) NOT NULL,
-  `quantity` int NOT NULL,
-  `totalcost` double NOT NULL,
-  PRIMARY KEY (`purchaseID`)
-) ENGINE=InnoDB AUTO_INCREMENT=1012 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+CREATE TABLE Employee (
+    EmployeeID INT PRIMARY KEY,
+    PersonID INT,
+    EmploymentType VARCHAR(50),
+    AssignedRegion VARCHAR(50),
+    ShiftTimings VARCHAR(50),
+    Salary DECIMAL(10,2),
+    FOREIGN KEY (PersonID) REFERENCES DeliveryPerson(PersonID)
+);
+CREATE TABLE Freelancer (
+    FreelancerID INT PRIMARY KEY,
+    PersonID INT,
+    Commission DECIMAL(10,2),
+    AvailabilitySchedule VARCHAR(100),
+    ContractExpiryDate DATE,
+    Rating FLOAT,
+    FOREIGN KEY (PersonID) REFERENCES DeliveryPerson(PersonID)
+);
+CREATE TABLE Vehicle (
+    VehicleID INT PRIMARY KEY,
+    Type VARCHAR(50),
+    Capacity INT,
+    Status VARCHAR(50),
+    PersonID INT,
+    FOREIGN KEY (PersonID) REFERENCES DeliveryPerson(PersonID)
+);
+CREATE TABLE RouteOptimization (
+    RouteID INT PRIMARY KEY,
+    Distance FLOAT,
+    EstimatedTime TIME,
+    VehicleID INT,
+    FOREIGN KEY (VehicleID) REFERENCES Vehicle(VehicleID)
+);
 
---
--- Dumping data for table `purchaseinfo`
---
+INSERT INTO Customer (CustomerID, Name, Address, Phone, Email) VALUES 
+(1, 'Aarav Mehta', '123 MG Road, Bengaluru, Karnataka', '+91-9876543210', 'aaravmehta@example.com'),
+(2, 'Isha Sharma', '56 Connaught Place, New Delhi', '+91-9123456789', 'ishasharma@example.com'),
+(3, 'Rohan Verma', '221 Bandra West, Mumbai', '+91-9988776655', 'rohanv@example.com'),
+(4, 'Ananya Singh', '12 Salt Lake, Kolkata', '+91-9090909090', 'ananya.singh@example.com'),
+(5, 'Kabir Jain', '9 Residency Road, Chennai', '+91-9876501234', 'kabirj@example.com'),
+(6, 'Sneha Reddy', '45 Banjara Hills, Hyderabad', '+91-9765432109', 'snehareddy@example.com'),
+(7, 'Vivaan Kapoor', '33 Sector 17, Chandigarh', '+91-9345678901', 'vivaan.kapoor@example.com'),
+(8, 'Diya Nair', '66 Vyttila, Kochi', '+91-9012345678', 'diyanair@example.com'),
+(9, 'Ayaan Deshmukh', '77 Camp Area, Pune', '+91-9234567890', 'ayaan.d@example.com'),
+(10, 'Tanya Gupta', '88 Hazratganj, Lucknow', '+91-9356789012', 'tanyag@example.com');
 
-LOCK TABLES `purchaseinfo` WRITE;
-/*!40000 ALTER TABLE `purchaseinfo` DISABLE KEYS */;
-INSERT INTO `purchaseinfo` VALUES (1001,'sup1','prod1','Wed Jan 14 00:15:19 IST 2021',10,850000),(1002,'sup1','prod6','Wed Jan 14 00:15:19 IST 2021',20,34000),(1003,'sup2','prod3','Wed Jan 14 00:15:19 IST 2021',5,300000),(1004,'sup2','prod5','Wed Jan 14 00:15:19 IST 2021',5,10000),(1005,'sup3','prod2','Wed Jan 14 00:15:19 IST 2021',2,140000),(1006,'sup4','prod4','Wed Jan 14 00:15:19 IST 2021',2,100000),(1009,'sup2','prod3','Wed Sep 01 04:11:13 IST 2021',2,120000),(1010,'sup1','prod7','Wed Sep 01 04:25:06 IST 2021',10,30000),(1011,'sup2','prod8','Fri Sep 03 00:00:00 IST 2021',20,300000);
-/*!40000 ALTER TABLE `purchaseinfo` ENABLE KEYS */;
-UNLOCK TABLES;
 
---
--- Table structure for table `salesinfo`
---
 
-DROP TABLE IF EXISTS `salesinfo`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `salesinfo` (
-  `salesid` int NOT NULL AUTO_INCREMENT,
-  `date` varchar(45) NOT NULL,
-  `productcode` varchar(45) NOT NULL,
-  `customercode` varchar(45) NOT NULL,
-  `quantity` int NOT NULL,
-  `revenue` double NOT NULL,
-  `soldby` varchar(45) NOT NULL,
-  PRIMARY KEY (`salesid`)
-) ENGINE=InnoDB AUTO_INCREMENT=2013 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+INSERT INTO DeliveryPerson (PersonID, Type) VALUES
+(1, 'Employee'),
+(2, 'Freelancer'),
+(3, 'Employee'),
+(4, 'Freelancer'),
+(5, 'Employee'),
+(6, 'Freelancer'),
+(7, 'Employee'),
+(8, 'Freelancer'),
+(9, 'Employee'),
+(10, 'Freelancer');
 
---
--- Dumping data for table `salesinfo`
---
 
-LOCK TABLES `salesinfo` WRITE;
-/*!40000 ALTER TABLE `salesinfo` DISABLE KEYS */;
-INSERT INTO `salesinfo` VALUES (2001,'Fri Jan 16 23:12:40 IST 2021','prod1','vip1',3,270000,'stduser1'),(2002,'Fri Jan 16 23:12:40 IST 2021','prod2','vip2',2,144000,'stduser1'),(2003,'Fri Jan 16 23:12:40 IST 2021','prod3','std1',1,64000,'aduser1'),(2004,'Fri Jan 16 23:12:40 IST 2021','prod4','std2',5,255000,'aduser1'),(2006,'Thu Aug 05 17:29:36 IST 2021','prod1','vip1',2,180000,'root'),(2007,'Fri Aug 06 00:00:00 IST 2021','prod4','std1',1,51000,'aduser1'),(2008,'Fri Aug 06 02:41:28 IST 2021','prod7','std1',1,3500,'aduser1'),(2009,'Sat Aug 07 00:00:00 IST 2021','prod7','std1',5,17500,'aduser1'),(2010,'Thu Aug 12 00:00:00 IST 2021','prod4','vip3',2,102000,'root'),(2011,'Sun Aug 15 23:08:51 IST 2021','prod7','vip2',10,35000,'root'),(2012,'Thu Aug 26 15:17:48 IST 2021','prod4','vip3',5,255000,'aduser1');
-/*!40000 ALTER TABLE `salesinfo` ENABLE KEYS */;
-UNLOCK TABLES;
+INSERT INTO Warehouse (WarehouseID, Location, Capacity) VALUES
+(1, 'Bhiwandi, Maharashtra', 10000),
+(2, 'Patparganj, Delhi', 8500),
+(3, 'Whitefield, Bengaluru', 9000),
+(4, 'Madhavaram, Chennai', 7500),
+(5, 'Barasat, Kolkata', 8000),
+(6, 'Manesar, Haryana', 9500),
+(7, 'Sanath Nagar, Hyderabad', 7200),
+(8, 'Pimpri, Pune', 8800),
+(9, 'Panvel, Navi Mumbai', 9200),
+(10, 'Aluva, Kochi', 7800);
 
---
--- Table structure for table `suppliers`
---
+INSERT INTO ORDERS (OrderID, OrderDate, Status, TotalAmount, CustomerID, DeliveryPersonID, WarehouseID) VALUES
+(1, '2024-04-01', 'Delivered', 1250.00, 1, 1, 1),
+(2, '2024-04-02', 'Shipped', 2150.50, 2, 2, 2),
+(3, '2024-04-03', 'Processing', 1999.99, 3, 3, 3),
+(4, '2024-04-04', 'Delivered', 3200.75, 4, 4, 4),
+(5, '2024-04-05', 'Cancelled', 850.00, 5, 5, 5),
+(6, '2024-04-06', 'Returned', 1500.00, 6, 6, 6),
+(7, '2024-04-07', 'Delivered', 780.60, 7, 7, 7),
+(8, '2024-04-08', 'Shipped', 1650.40, 8, 8, 8),
+(9, '2024-04-09', 'Processing', 2750.90, 9, 9, 9),
+(10, '2024-04-10', 'Delivered', 999.00, 10, 10, 10);
 
-DROP TABLE IF EXISTS `suppliers`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `suppliers` (
-  `sid` int NOT NULL AUTO_INCREMENT,
-  `suppliercode` varchar(45) NOT NULL,
-  `fullname` varchar(45) NOT NULL,
-  `location` varchar(45) NOT NULL,
-  `mobile` varchar(10) NOT NULL,
-  PRIMARY KEY (`sid`)
-) ENGINE=InnoDB AUTO_INCREMENT=409 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+INSERT INTO Payment (PaymentID, OrderID, PaymentMode, TransactionDate) VALUES
+(1, 1, 'UPI', '2024-04-01'),
+(2, 2, 'Credit Card', '2024-04-02'),
+(3, 3, 'Debit Card', '2024-04-03'),
+(4, 4, 'Cash on Delivery', '2024-04-04'),
+(5, 5, 'Net Banking', '2024-04-05'),
+(6, 6, 'UPI', '2024-04-06'),
+(7, 7, 'Credit Card', '2024-04-07'),
+(8, 8, 'Wallet', '2024-04-08'),
+(9, 9, 'UPI', '2024-04-09'),
+(10, 10, 'Debit Card', '2024-04-10');
 
---
--- Dumping data for table `suppliers`
---
+INSERT INTO ShipmentTracking (TrackingID, OrderID, Status, CurrentLocation) VALUES
+(1, 1, 'Delivered', 'Bengaluru'),
+(2, 2, 'In Transit', 'Agra'),
+(3, 3, 'Warehouse Scan', 'Pune'),
+(4, 4, 'Delivered', 'Chennai'),
+(5, 5, 'Cancelled', 'Mumbai'),
+(6, 6, 'Return Initiated', 'Hyderabad'),
+(7, 7, 'Delivered', 'Delhi'),
+(8, 8, 'Shipped', 'Kolkata'),
+(9, 9, 'In Transit', 'Ahmedabad'),
+(10, 10, 'Delivered', 'Lucknow');
 
-LOCK TABLES `suppliers` WRITE;
-/*!40000 ALTER TABLE `suppliers` DISABLE KEYS */;
-INSERT INTO `suppliers` VALUES (401,'sup1','Dell Inc.','Gurugram','1800560001'),(402,'sup2','iWorld Stores','New Delhi','1800560041'),(403,'sup3','Samsung Appliances','New Delhi','6546521234'),(404,'sup4','Hewlett-Packard','Mumbai','8555202215'),(407,'sup5','Hewlett-Packard Ltd.','Mumbai','8555203300'),(408,'sup6','Shelby Company Ltd.','Birmingham','9696969696');
-/*!40000 ALTER TABLE `suppliers` ENABLE KEYS */;
-UNLOCK TABLES;
+INSERT INTO Employee (EmployeeID, PersonID, EmploymentType, AssignedRegion, ShiftTimings, Salary) VALUES 
+(1, 1, 'Full-Time', 'South Zone', '9AM-6PM', 25000.00),
+(2, 3, 'Part-Time', 'North Zone', '2PM-8PM', 12000.00),
+(3, 5, 'Full-Time', 'East Zone', '10AM-7PM', 23000.00),
+(4, 7, 'Full-Time', 'West Zone', '9AM-6PM', 24000.00),
+(5, 9, 'Part-Time', 'Central Zone', '4PM-9PM', 13000.00);
 
---
--- Table structure for table `userlogs`
---
+INSERT INTO Freelancer (FreelancerID, PersonID, Commission, AvailabilitySchedule, ContractExpiryDate, Rating) VALUES 
+(1, 2, 500.00, '10AM-6PM', '2024-12-31', 4.5),
+(2, 4, 450.00, '11AM-5PM', '2024-11-30', 4.0),
+(3, 6, 400.00, '1PM-8PM', '2024-10-15', 3.8),
+(4, 8, 550.00, '9AM-4PM', '2025-01-15', 4.6),
+(5, 10, 600.00, '12PM-7PM', '2024-12-01', 4.3);
 
-DROP TABLE IF EXISTS `userlogs`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `userlogs` (
-  `username` varchar(45) NOT NULL,
-  `in_time` varchar(45) NOT NULL,
-  `out_time` varchar(45) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+INSERT INTO Vehicle (VehicleID, Type, Capacity, Status, PersonID) VALUES
+(1, 'Bike', 100, 'Active', 1),
+(2, 'Van', 500, 'Active', 2),
+(3, 'Truck', 1000, 'In Service', 3),
+(4, 'Bike', 150, 'Active', 4),
+(5, 'Van', 600, 'Under Repair', 5),
+(6, 'Truck', 1200, 'Active', 6),
+(7, 'Scooter', 90, 'Active', 7),
+(8, 'Mini Van', 400, 'In Service', 8),
+(9, 'Bike', 100, 'Active', 9),
+(10, 'Van', 550, 'Active', 10);
 
---
--- Dumping data for table `userlogs`
---
+INSERT INTO RouteOptimization (RouteID, Distance, EstimatedTime, VehicleID) VALUES
+(1, 12.5, '00:25:00', 1),
+(2, 30.0, '00:45:00', 2),
+(3, 55.2, '01:10:00', 3),
+(4, 10.0, '00:20:00', 4),
+(5, 40.7, '01:00:00', 5),
+(6, 70.5, '01:30:00', 6),
+(7, 8.0, '00:18:00', 7),
+(8, 25.4, '00:40:00', 8),
+(9, 15.0, '00:30:00', 9),
+(10, 33.3, '00:50:00', 10);
 
-LOCK TABLES `userlogs` WRITE;
-/*!40000 ALTER TABLE `userlogs` DISABLE KEYS */;
-INSERT INTO `userlogs` VALUES ('aduser1','2021-09-01T04:46:55.125709800','2021-09-01T04:47:01.801381'),('root','2021-09-01T05:02:43.010014','2021-09-01T05:02:50.224787400'),('stduser1','2021-09-01T05:04:57.690182100','2021-09-01T05:05:04.294274300'),('root','2021-09-01T05:05:12.269897600','2021-09-01T05:05:16.866792500'),('root','2021-09-01T05:10:08.728527600','2021-09-01T05:10:16.926883100'),('root','2021-09-01T06:19:09.326477200','2021-09-01T06:19:21.641620900'),('emp1','2021-09-01T06:19:34.536411800','2021-09-01T06:19:43.517392100'),('root','2021-09-01T06:19:46.811400900','2021-09-01T06:20:10.879660700'),('root','2021-09-01T14:59:48.661066400','2021-09-01T15:02:09.761864900'),('root','2021-09-01T15:09:02.964317400','2021-09-01T15:09:14.141324800'),('root','2021-09-01T15:09:27.889908500','2021-09-01T15:09:48.262387'),('root','2021-09-01T15:38:48.557639300','2021-09-01T15:40:00.527183800'),('root','2021-09-01T15:40:22.622326','2021-09-01T15:41:06.461438500'),('root','2021-09-01T15:44:26.195028100','2021-09-01T15:44:33.071448800'),('root','2021-09-02T01:42:52.417989900','2021-09-02T01:42:55.226675900'),('root','2021-09-02T01:43:12.226339400','2021-09-02T01:43:15.818776'),('aduser1','2021-09-03T02:12:41.021781900','2021-09-03T02:19:11.829873500');
-/*!40000 ALTER TABLE `userlogs` ENABLE KEYS */;
-UNLOCK TABLES;
+-- Customer Table
+SELECT * FROM Customer;
 
---
--- Table structure for table `users`
---
+-- DeliveryPerson Table
+SELECT * FROM DeliveryPerson;
 
-DROP TABLE IF EXISTS `users`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `users` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(45) NOT NULL,
-  `location` varchar(45) NOT NULL,
-  `phone` varchar(10) NOT NULL,
-  `username` varchar(20) NOT NULL,
-  `password` varchar(200) NOT NULL,
-  `usertype` varchar(45) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+-- Warehouse Table
+SELECT * FROM Warehouse;
 
---
--- Dumping data for table `users`
---
+-- Orders Table
+SELECT * FROM ORDERS;
 
-LOCK TABLES `users` WRITE;
-/*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (17,'Asjad Iqbal','Chandigarh','9650786717','aduser1','dbadpass','ADMINISTRATOR'),(18,'Ahan Jaiswal','Delhi','9660654785','stduser1','dbstdpass','EMPLOYEE'),(20,'Trial Admin','Local','9876543210','root','root','ADMINISTRATOR'),(29,'Trial Employee','Local','1122334455','emp1','emp1','EMPLOYEE');
-/*!40000 ALTER TABLE `users` ENABLE KEYS */;
-UNLOCK TABLES;
-/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+-- Payment Table
+SELECT * FROM Payment;
 
-/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
-/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
-/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+-- ShipmentTracking Table
+SELECT * FROM ShipmentTracking;
 
--- Dump completed on 2021-09-03  2:28:58
+-- Vendor Table
+SELECT * FROM Vendor;
+
+-- Product Table
+SELECT * FROM Product;
+
+-- Perishable Table
+SELECT * FROM Perishable;
+
+-- NonPerishable Table
+SELECT * FROM NonPerishable;
+
+-- Employee Table
+SELECT * FROM Employee;
+
+-- Freelancer Table
+SELECT * FROM Freelancer;
+
+-- Vehicle Table
+SELECT * FROM Vehicle;
+
+-- RouteOptimization Table
+
+
+-- drop table Login ;
+CREATE TABLE Login (
+  username VARCHAR(20) NOT NULL,
+  password VARCHAR(20) NOT NULL,
+  role ENUM('Admin', 'Customer', 'Vendor') NOT NULL,
+  PRIMARY KEY (username, role)
+);
+INSERT INTO Login (username, password, role) VALUES
+('admin', 'admin123', 'Admin'),
+('customer', 'customer123', 'Customer'),
+('vendor', 'vendor123', 'Vendor')
+;
+
+select * from  Login;
+
+
